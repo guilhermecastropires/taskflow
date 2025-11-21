@@ -1,203 +1,162 @@
-TaskFlow é uma plataforma completa de gerenciamento de tarefas, moderna, segura e equipada com um chatbot inteligente integrado ao Google Gemini AI.
+# **TaskFlow – Plataforma Completa de Gerenciamento de Tarefas**
 
-✨ Principais Diferenciais
-🎨 Interface Moderna: design responsivo com Tailwind CSS
-🔒 Segurança: autenticação JWT com senhas criptografadas (bcrypt)
-🤖 IA Integrada: chatbot com Gemini AI
-📊 Dashboard Intuitivo: estatísticas em tempo real
-🚀 Performance: backend otimizado em TypeScript
-📱 Responsivo: funciona em desktop e mobile
+TaskFlow é uma aplicação web desenvolvida para ajudar usuários a organizar tarefas, acompanhar progresso e aumentar a produtividade, contando também com suporte inteligente via **Google Gemini AI**.
 
-🚀 Funcionalidades
-👤 Gestão de Usuários
-Registro de usuários
-Login com JWT
-Validação de email e senha
-Perfil personalizável
-Exclusão de conta
+## ✨ **Funcionalidades Principais**
 
-📋 Gestão de Tarefas
-Criar, editar e excluir tarefas
-Status: Pendente / Em Progresso / Concluída
-Prioridade: Baixa / Média / Alta
-Descrição e data de vencimento
-Marcar como concluída
-Filtros por status e prioridade
-Tarefas do dia
+* **Autenticação de Usuários:**
+    * **Registro seguro** com validação.
+    * **Login protegido** com JWT.
+    * **Senhas criptografadas** com bcrypt.
+    * **Perfil personalizável**.
+    * **Exclusão de conta**.
 
-📊 Dashboard & Estatísticas
-Total de tarefas
-Pendentes
-Em progresso
-Concluídas
-Distribuição por prioridade
-Cards interativos
+* **Gerenciamento de Tarefas:**
+    * **Criar, editar e deletar** tarefas.
+    * Marcar como **concluída** ou **não concluída**.
+    * Definir **status**: Pendente, Em Progresso, Concluída.
+    * Definir **prioridade**: Baixa, Média, Alta.
+    * Adicionar **descrição** e **data de vencimento**.
 
-🤖 Chatbot Inteligente
-Respostas instantâneas (FAQ)
-Integração com Gemini AI
-Contexto do sistema
-Histórico
-Interface flutuante
+* **Dashboard Moderno:**
+    * **Resumo geral** de tarefas.
+    * Tarefas pendentes, em progresso e concluídas.
+    * **Distribuição por prioridade**.
+    * **Cards visuais** e interface responsiva.
 
-🛠️ Tecnologias
-Backend
-Node.js 18+
-TypeScript 5
-Express.js
-MySQL 8
-JWT
-Bcrypt
-dotenv
-Frontend
-HTML5
-CSS3
-JavaScript ES6+
-Tailwind CSS
-Fetch API
-Chatbot
-Python 3.9+
-Flask
-Google Gemini AI
-Flask-CORS
+* **Chatbot Inteligente (Gemini AI):**
+    * **FAQ com respostas rápidas**.
+    * **IA avançada** para perguntas complexas.
+    * **Histórico de conversação**.
+    * Interface flutuante integrada.
 
-📋 Pré-requisitos
-# Node.js (v18+)
-node --version
+## 🛠️ **Tecnologias Utilizadas**
 
-# npm
-npm --version
+* **Backend:**
+    * Node.js
+    * TypeScript
+    * Express.js
+    * MySQL
+    * JWT
+    * Bcrypt
+    * dotenv
 
-# MySQL (v8+)
-mysql --version
+* **Frontend:**
+    * HTML5
+    * CSS3
+    * JavaScript (ES6+)
+    * Tailwind CSS
+    * Fetch API
 
-# Python (v3.9+)
-python --version
+* **Chatbot:**
+    * Python
+    * Flask
+    * Google Gemini AI
+    * Flask-CORS
 
-# pip
-pip --version
+## 🚀 **Começando**
 
-🔑 API Key do Gemini
+### **Pré-requisitos**
+* Node.js 18+
+* npm
+* MySQL 8+
+* Python 3.9+
+* pip
+* Git
 
-Acesse: https://aistudio.google.com/app/apikey
+### **Instalação**
 
-Faça login
+1. **Clone o repositório:**
+    ```bash
+    git clone https://github.com/seu-usuario/taskflow.git
+    cd taskflow
+    ```
 
-Clique em Create API Key
+2. **Configure o Banco de Dados MySQL:**
+    ```sql
+    CREATE DATABASE taskflow;
+    USE taskflow;
 
-Copie a chave
+    CREATE TABLE usuarios (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      nome VARCHAR(255) NOT NULL,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      senha VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 
-📦 Instalação
-1️⃣ Clonar o Repositório
-git clone https://github.com/seu-usuario/taskflow.git
-cd taskflow
+    CREATE TABLE tarefas (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      usuario_id INT NOT NULL,
+      titulo VARCHAR(255) NOT NULL,
+      descricao TEXT,
+      status ENUM('pendente', 'em_progresso', 'concluida') DEFAULT 'pendente',
+      prioridade ENUM('baixa', 'media', 'alta') DEFAULT 'media',
+      data_vencimento DATE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+    );
+    ```
 
-2️⃣ Configurar o Banco de Dados
-CREATE DATABASE taskflow;
-USE taskflow;
+3. **Instale as dependências do backend:**
+    ```bash
+    cd backend
+    npm install
+    ```
 
-CREATE TABLE usuarios (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nome VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  senha VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+4. **Instale o chatbot:**
+    ```bash
+    cd ../chatbot
+    python -m venv venv
+    # Windows:
+    venv\Scripts\activate
+    # Linux/Mac:
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
 
-CREATE TABLE tarefas (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  usuario_id INT NOT NULL,
-  titulo VARCHAR(255) NOT NULL,
-  descricao TEXT,
-  status ENUM('pendente', 'em_progresso', 'concluida') DEFAULT 'pendente',
-  prioridade ENUM('baixa', 'media', 'alta') DEFAULT 'media',
-  data_vencimento DATE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-);
+## ⚙️ **Configuração**
 
-3️⃣ Instalar Dependências do Backend
-cd backend
-npm install
+### **Backend – arquivo backend/.env**
 
-4️⃣ Instalar Dependências do Chatbot
-cd ../chatbot
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-
-pip install -r requirements.txt
-
-⚙️ Configuração
-Backend – backend/.env
 PORT=3001
-
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=sua_senha_mysql
 DB_NAME=taskflow
-
 JWT_SECRET=seu_secret_super_seguro_aqui_123456
 JWT_EXPIRES_IN=7d
-
 BCRYPT_ROUNDS=10
 
-Chatbot – chatbot/.env
-GEMINI_API_KEY=sua_chave_api_gemini_aqui
 
+### **Chatbot – arquivo chatbot/.env**
+
+
+GEMINI_API_KEY=sua_chave_api_gemini_aqui
 FLASK_ENV=development
 FLASK_DEBUG=True
 
-🚀 Uso
-1️⃣ Iniciar Backend
-cd backend
-npm run dev
 
+## 🚀 **Rodando a Aplicação**
 
-Saída esperada:
+1. **Iniciar o Backend**
+    ```bash
+    cd backend
+    npm run dev
+    ```
 
-Conexão com MySQL estabelecida com sucesso!
-Servidor rodando na porta 3001
-http://localhost:3001
+2. **Iniciar o Chatbot**
+    ```bash
+    cd chatbot
+    python chatbot.py
+    ```
 
-2️⃣ Iniciar Chatbot (Opcional)
-cd chatbot
-python chatbot.py
-
-
-Saída esperada:
-
-TASKFLOW CHATBOT INICIANDO...
-Flask: OK
-CORS: OK
-Gemini API: OK
-FAQs carregadas: 15
-Servidor em http://localhost:5000
-
-3️⃣ Iniciar o Frontend
-cd frontend
-python -m http.server 8000
-
-
-ou:
-
-npx http-server -p 8000
-
+3. **Iniciar o Frontend**
+    ```bash
+    cd frontend
+    python -m http.server 8000
+    ```
 
 Acesse: http://localhost:8000
-
-4️⃣ Criar uma Conta e Usar
-
-Clique em Cadastre-se
-
-Preencha nome, email e senha
-
-Faça login
-
-Comece a criar tarefas 🎯
