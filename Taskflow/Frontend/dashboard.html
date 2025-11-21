@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .task-item { animation: slideIn 0.3s ease-out; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeInUp { animation: fadeInUp 0.6s ease-out; }
+        
+        /* Chatbot Scroll */
+        #chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <!-- Navbar -->
+    <nav class="bg-white rounded-2xl shadow-lg p-4 mb-8">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="gradient-purple p-2 rounded-xl">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">TaskFlow</h1>
+                    <p class="text-sm text-gray-500" id="welcomeMessage">Bem-vindo!</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="logoutBtn" class="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Sair
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-2xl shadow-lg p-6 card-hover transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="bg-blue-100 p-3 rounded-xl">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+            </div>
+            <h3 class="text-gray-500 text-sm font-medium">Total de Tarefas</h3>
+            <p class="text-3xl font-bold text-gray-800 mt-2" id="totalTasks">0</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 card-hover transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="bg-yellow-100 p-3 rounded-xl">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <h3 class="text-gray-500 text-sm font-medium">Pendentes</h3>
+            <p class="text-3xl font-bold text-gray-800 mt-2" id="pendingTasks">0</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 card-hover transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="bg-purple-100 p-3 rounded-xl">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+            </div>
+            <h3 class="text-gray-500 text-sm font-medium">Em Progresso</h3>
+            <p class="text-3xl font-bold text-gray-800 mt-2" id="progressTasks">0</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 card-hover transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="bg-green-100 p-3 rounded-xl">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <h3 class="text-gray-500 text-sm font-medium">Concluídas</h3>
+            <p class="text-3xl font-bold text-gray-800 mt-2" id="completedTasks">0</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Task List -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Minhas Tarefas</h2>
+                    <button id="newTaskBtn" class="gradient-purple text-white px-4 py-2 rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Nova Tarefa
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <button data-filter="all" class="filter-btn px-4 py-2 rounded-xl bg-purple-100 text-purple-600 font-medium">
+                        Todas
+                    </button>
+                    <button data-filter="pendente" class="filter-btn px-4 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200">
+                        Pendentes
+                    </button>
+                    <button data-filter="em_progresso" class="filter-btn px-4 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200">
+                        Em Progresso
+                    </button>
+                    <button data-filter="concluida" class="filter-btn px-4 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200">
+                        Concluídas
+                    </button>
+                </div>
+
+                <!-- Task List -->
+                <div id="taskList" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                    <!-- Tasks will be loaded here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="text-center py-12 hidden">
+                    <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <h3 class="text-xl font-semibold text-gray-500 mb-2">Nenhuma tarefa encontrada</h3>
+                    <p class="text-gray-400">Crie sua primeira tarefa para começar!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Ações Rápidas</h3>
+                <div class="space-y-3">
+                    <button data-priority="alta" class="priority-filter w-full text-left px-4 py-3 rounded-xl hover:bg-red-50 transition-colors flex items-center gap-3">
+                        <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-gray-700">Alta Prioridade</span>
+                    </button>
+                    <button id="todayTasksBtn" class="w-full text-left px-4 py-3 rounded-xl hover:bg-blue-50 transition-colors flex items-center gap-3">
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="text-gray-700">Tarefas de Hoje</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Info -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Perfil</h3>
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-16 h-16 rounded-full gradient-purple flex items-center justify-center text-white text-2xl font-bold" id="userAvatar">
+                        U
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800" id="userName">Usuário</p>
+                        <p class="text-sm text-gray-500" id="userEmail">email@example.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Task Modal -->
+    <div id="taskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">Nova Tarefa</h2>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="taskForm" class="space-y-5">
+                <input type="hidden" id="taskId">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Título</label>
+                    <input type="text" id="taskTitle" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Descrição</label>
+                    <textarea id="taskDescription" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                        <select id="taskStatus" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors">
+                            <option value="pendente">Pendente</option>
+                            <option value="em_progresso">Em Progresso</option>
+                            <option value="concluida">Concluída</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Prioridade</label>
+                        <select id="taskPriority" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors">
+                            <option value="baixa">Baixa</option>
+                            <option value="media">Média</option>
+                            <option value="alta">Alta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Data da tarefa</label>
+                    <input type="date" id="taskDueDate" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors">
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 gradient-purple text-white py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity">
+                        Salvar
+                    </button>
+                    <button type="button" id="cancelModalBtn" class="px-6 py-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== CHATBOT WIDGET ==================== -->
+    <div id="chatbot-container" class="fixed bottom-6 right-6 z-50">
+        <!-- Chatbot Button -->
+        <button id="chatbot-toggle" class="w-16 h-16 rounded-full gradient-purple shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-200 animate-pulse">
+            <svg id="chat-icon" class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            </svg>
+            <svg id="close-icon" class="w-8 h-8 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Chatbot Window -->
+        <div id="chatbot-window" class="hidden absolute bottom-20 right-0 w-96 h-[600px] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-fadeInUp">
+            <!-- Header -->
+            <div class="gradient-purple p-4 text-white">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Assistente TaskFlow</h3>
+                            <p class="text-xs text-white text-opacity-80 flex items-center gap-1">
+                                <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                                Online
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                <!-- Welcome Message -->
+                <div class="flex gap-3 animate-fadeInUp">
+                    <div class="w-8 h-8 rounded-full gradient-purple flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm max-w-[80%]">
+                        <p class="text-gray-800 text-sm">Olá! 👋 Sou o assistente do TaskFlow. Como posso ajudá-lo hoje?</p>
+                        <span class="text-xs text-gray-400 mt-1 block">Agora</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div id="quick-actions" class="p-3 bg-white border-t border-gray-100">
+                <p class="text-xs text-gray-500 mb-2 font-medium">Perguntas rápidas:</p>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="sendQuickMessage('Como criar uma tarefa?')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs text-gray-700 transition-colors">
+                        📋 Como criar tarefa?
+                    </button>
+                    <button onclick="sendQuickMessage('Como editar uma tarefa?')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs text-gray-700 transition-colors">
+                        ✏️ Como editar?
+                    </button>
+                    <button onclick="sendQuickMessage('Ajuda')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs text-gray-700 transition-colors">
+                        💡 Ajuda
+                    </button>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 bg-white border-t border-gray-200">
+                <div class="flex gap-2">
+                    <input 
+                        type="text" 
+                        id="chat-input" 
+                        placeholder="Digite sua mensagem..."
+                        class="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none text-sm"
+                        onkeypress="if(event.key === 'Enter') sendChatMessage()"
+                    >
+                    <button 
+                        id="send-button"
+                        onclick="sendChatMessage()" 
+                        class="gradient-purple text-white p-2.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400 mt-2 text-center">Powered by Gemini AI ✨</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts INLINE -->
+    <script>
+        // ==================== CONFIGURAÇÕES ====================
+        const API_URL = 'http://localhost:3001/api';
+        const CHATBOT_API_URL = 'http://localhost:5000/api/chat';
+
+        // ==================== API CLASS ====================
+        class API {
+            constructor() {
+                this.baseURL = API_URL;
+            }
+
+            getToken() {
+                const user = localStorage.getItem('user');
+                if (!user) return null;
+                try {
+                    const userData = JSON.parse(user);
+                    return userData.token || null;
+                } catch (e) {
+                    console.error('Erro ao parsear user:', e);
+                    return null;
+                }
+            }
+
+            getHeaders() {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = this.getToken();
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                return headers;
+            }
+
+            async request(endpoint, options = {}) {
+                try {
+                    console.log(`📤 ${options.method || 'GET'}: ${this.baseURL}${endpoint}`);
+                    
+                    const response = await fetch(`${this.baseURL}${endpoint}`, {
+                        ...options,
+                        headers: { ...this.getHeaders(), ...options.headers }
+                    });
+
+                    const data = await response.json();
+                    console.log(`📥 Status ${response.status}:`, data);
+
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            localStorage.removeItem('user');
+                            window.location.href = 'index.html';
+                        }
+                        throw new Error(data.message || 'Erro na requisição');
+                    }
+
+                    return data;
+                } catch (error) {
+                    console.error('❌ Erro:', error);
+                    throw error;
+                }
+            }
+
+            async getTasks(filters = {}) {
+                const params = new URLSearchParams(filters);
+                const query = params.toString() ? `?${params.toString()}` : '';
+                return this.request(`/tasks${query}`, { method: 'GET' });
+            }
+
+            async getTaskStats() {
+                return this.request('/tasks/stats', { method: 'GET' });
+            }
+
+            async getTaskById(id) {
+                return this.request(`/tasks/${id}`, { method: 'GET' });
+            }
+
+            async createTask(taskData) {
+                return this.request('/tasks', {
+                    method: 'POST',
+                    body: JSON.stringify(taskData)
+                });
+            }
+
+            async updateTask(id, taskData) {
+                return this.request(`/tasks/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(taskData)
+                });
+            }
+
+            async deleteTask(id) {
+                return this.request(`/tasks/${id}`, { method: 'DELETE' });
+            }
+
+            async markTaskAsCompleted(id) {
+                return this.request(`/tasks/${id}/complete`, { method: 'PATCH' });
+            }
+        }
+
+        const api = new API();
+
+        // ==================== UTILS ====================
+        function checkAuth() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            try {
+                const user = JSON.parse(userStr);
+                if (!user.token) {
+                    window.location.href = 'index.html';
+                    return false;
+                }
+                return user;
+            } catch (e) {
+                window.location.href = 'index.html';
+                return false;
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Sem data';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function formatDateForInput(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toISOString().split('T')[0];
+        }
+
+        function showAlert(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-100 border-green-500 text-green-700',
+                error: 'bg-red-100 border-red-500 text-red-700',
+                info: 'bg-blue-100 border-blue-500 text-blue-700'
+            };
+
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg border-2 ${colors[type]} animate-fadeInUp`;
+            alertDiv.innerHTML = `<span class="font-medium">${message}</span>`;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => alertDiv.remove(), 3000);
+        }
+
+        function showLoading() {
+            const loading = document.createElement('div');
+            loading.id = 'loading';
+            loading.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            loading.innerHTML = '<div class="bg-white rounded-2xl p-8"><div class="animate-spin h-12 w-12 border-4 border-purple-600 border-t-transparent rounded-full"></div></div>';
+            document.body.appendChild(loading);
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) loading.remove();
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                pendente: 'bg-yellow-100 text-yellow-800',
+                em_progresso: 'bg-blue-100 text-blue-800',
+                concluida: 'bg-green-100 text-green-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getPriorityColor(prioridade) {
+            const colors = {
+                baixa: 'bg-gray-100 text-gray-800',
+                media: 'bg-yellow-100 text-yellow-800',
+                alta: 'bg-red-100 text-red-800'
+            };
+            return colors[prioridade] || 'bg-gray-100 text-gray-800';
+        }
+
+        function translateStatus(status) {
+            const t = { pendente: 'Pendente', em_progresso: 'Em Progresso', concluida: 'Concluída' };
+            return t[status] || status;
+        }
+
+        function translatePriority(prioridade) {
+            const t = { baixa: 'Baixa', media: 'Média', alta: 'Alta' };
+            return t[prioridade] || prioridade;
+        }
+
+        // ==================== DASHBOARD ====================
+        let allTasks = [];
+        let currentEditingTaskId = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Dashboard iniciando...');
+            const user = checkAuth();
+            if (!user) return;
+
+            displayUserInfo(user);
+            setupEventListeners();
+            await loadDashboardData();
+        });
+
+        function displayUserInfo(user) {
+            document.getElementById('welcomeMessage').textContent = `Bem-vindo, ${user.nome}!`;
+            document.getElementById('userName').textContent = user.nome;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userAvatar').textContent = user.nome.charAt(0).toUpperCase();
+        }
+
+        function setupEventListeners() {
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('Deseja realmente sair?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = 'index.html';
+                }
+            });
+
+            // Nova tarefa
+            document.getElementById('newTaskBtn').addEventListener('click', openCreateModal);
+
+            // Fechar modal
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+
+            // Formulário
+            document.getElementById('taskForm').addEventListener('submit', handleFormSubmit);
+
+            // Filtros
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    filterTasks(filter);
+                });
+            });
+
+            // Filtro de prioridade
+            document.querySelectorAll('.priority-filter').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const priority = this.getAttribute('data-priority');
+                    filterByPriority(priority);
+                });
+            });
+
+            // Tarefas de hoje
+            document.getElementById('todayTasksBtn').addEventListener('click', showTodayTasks);
+        }
+
+        async function loadDashboardData() {
+            try {
+                showLoading();
+                await loadStats();
+                await loadTasks();
+                hideLoading();
+                console.log('✅ Dashboard carregado');
+            } catch (error) {
+                hideLoading();
+                showAlert('Erro ao carregar dados', 'error');
+                console.error(error);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await api.getTaskStats();
+                if (response.success) {
+                    const stats = response.data;
+                    document.getElementById('totalTasks').textContent = stats.total || 0;
+                    document.getElementById('pendingTasks').textContent = stats.pendentes || 0;
+                    document.getElementById('progressTasks').textContent = stats.em_progresso || 0;
+                    document.getElementById('completedTasks').textContent = stats.concluidas || 0;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
+            }
+        }
+
+        async function loadTasks(filters = {}) {
+            try {
+                const response = await api.getTasks(filters);
+                if (response.success) {
+                    allTasks = response.data;
+                    displayTasks(allTasks);
+                }
+            } catch (error) {
+                showAlert('Erro ao carregar tarefas', 'error');
+            }
+        }
+
+        function displayTasks(tasks) {
+            const taskList = document.getElementById('taskList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (!tasks || tasks.length === 0) {
+                taskList.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            taskList.innerHTML = tasks.map(task => `
+                <div class="task-item bg-gray-50 rounded-xl p-4 hover:shadow-md transition-all">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="font-semibold text-gray-800 text-lg">${task.titulo}</h3>
+                                <span class="px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(task.status)}">
+                                    ${translateStatus(task.status)}
+                                </span>
+                                <span class="px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(task.prioridade)}">
+                                    ${translatePriority(task.prioridade)}
+                                </span>
+                            </div>
+                            ${task.descricao ? `<p class="text-gray-600 text-sm mb-3">${task.descricao}</p>` : ''}
+                            <div class="flex items-center gap-4 text-xs text-gray-500">
+                                ${task.data_vencimento ? `<span>📅 ${formatDate(task.data_vencimento)}</span>` : ''}
+                                <span>🕐 ${formatDate(task.created_at)}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2 ml-4">
+                            ${task.status !== 'concluida' ? `
+                                <button onclick="markAsCompleted(${task.id})" class="p-2 text-green-600 hover:bg-green-50 rounded-lg" title="Concluir">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                            ` : ''}
+                            
+                            <button onclick="editTask(${task.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" title="Editar">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            
+                            <button onclick="deleteTask(${task.id})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg" title="Deletar">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterTasks(status) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = 'filter-btn px-4 py-2 rounded-xl font-medium bg-gray-100 text-gray-600 hover:bg-gray-200';
+            });
+            
+            document.querySelector(`[data-filter="${status}"]`).className = 'filter-btn px-4 py-2 rounded-xl font-medium bg-purple-100 text-purple-600';
+            
+            if (status === 'all') {
+                displayTasks(allTasks);
+            } else {
+                const filtered = allTasks.filter(task => task.status === status);
+                displayTasks(filtered);
+            }
+        }
+
+        function filterByPriority(priority) {
+            const filtered = allTasks.filter(task => task.prioridade === priority);
+            displayTasks(filtered);
+            showAlert(`Mostrando tarefas de prioridade ${translatePriority(priority)}`, 'info');
+        }
+
+        function showTodayTasks() {
+            const today = new Date().toISOString().split('T')[0];
+            const filtered = allTasks.filter(task => {
+                if (!task.data_vencimento) return false;
+                const taskDate = new Date(task.data_vencimento).toISOString().split('T')[0];
+                return taskDate === today;
+            });
+            displayTasks(filtered);
+            showAlert('Mostrando tarefas de hoje', 'info');
+        }
+
+        function openCreateModal() {
+            currentEditingTaskId = null;
+            document.getElementById('modalTitle').textContent = 'Nova Tarefa';
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            document.getElementById('taskModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('taskModal').classList.add('hidden');
+            document.getElementById('taskForm').reset();
+            currentEditingTaskId = null;
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const taskData = {
+                titulo: document.getElementById('taskTitle').value,
+                descricao: document.getElementById('taskDescription').value,
+                status: document.getElementById('taskStatus').value,
+                prioridade: document.getElementById('taskPriority').value,
+                data_vencimento: document.getElementById('taskDueDate').value || null
+            };
+
+            try {
+                showLoading();
+                
+                let response;
+                if (currentEditingTaskId) {
+                    response = await api.updateTask(currentEditingTaskId, taskData);
+                } else {
+                    response = await api.createTask(taskData);
+                }
+                
+                hideLoading();
+                
+                if (response.success) {
+                    showAlert(currentEditingTaskId ? 'Tarefa atualizada!' : 'Tarefa criada!', 'success');
+                    closeModal();
+                    await loadDashboardData();
+                }
+            } catch (error) {
+                hideLoading();
+                showAlert('Erro ao salvar tarefa: ' + error.message, 'error');
+            }
+        }
+
+        async function editTask(id) {
+            try {
+                showLoading();
+                const response = await api.getTaskById(id);
+                hideLoading();
+                
+                if (response.success) {
+                    const task = response.data;
+                    currentEditingTaskId = id;
+                    
+                    document.getElementById('modalTitle').textContent = 'Editar Tarefa';
+                    document.getElementById('taskId').value = task.id;
+                    document.getElementById('taskTitle').value = task.titulo;
+                    document.getElementById('taskDescription').value = task.descricao || '';
+                    document.getElementById('taskStatus').value = task.status;
+                    document.getElementById('taskPriority').value = task.prioridade;
+                    document.getElementById('taskDueDate').value = formatDateForInput(task.data_vencimento);
+                    
+                    document.getElementById('taskModal').classList.remove('hidden');
+                }
+            } catch (error) {
+                hideLoading();
+                showAlert('Erro ao carregar tarefa', 'error');
+            }
+        }
+
+        async function markAsCompleted(id) {
+            if (!confirm('Marcar esta tarefa como concluída?')) return;
+            
+            try {
+                showLoading();
+                const response = await api.markTaskAsCompleted(id);
+                hideLoading();
+                
+                if (response.success) {
+                    showAlert('Tarefa concluída!', 'success');
+                    await loadDashboardData();
+                }
+            } catch (error) {
+                hideLoading();
+                showAlert('Erro ao atualizar tarefa', 'error');
+            }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm('Deseja realmente deletar esta tarefa?')) return;
+            
+            try {
+                showLoading();
+                const response = await api.deleteTask(id);
+                hideLoading();
+                
+                if (response.success) {
+                    showAlert('Tarefa deletada!', 'success');
+                    await loadDashboardData();
+                }
+            } catch (error) {
+                hideLoading();
+                showAlert('Erro ao deletar tarefa', 'error');
+            }
+        }
+
+        // ==================== CHATBOT ====================
+        let conversationHistory = [];
+        let isWaitingResponse = false;
+
+        const chatbotToggle = document.getElementById('chatbot-toggle');
+        const chatbotWindow = document.getElementById('chatbot-window');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const chatIcon = document.getElementById('chat-icon');
+        const closeIcon = document.getElementById('close-icon');
+        const quickActions = document.getElementById('quick-actions');
+
+        chatbotToggle.addEventListener('click', function() {
+            const isOpen = !chatbotWindow.classList.contains('hidden');
+            
+            if (isOpen) {
+                chatbotWindow.classList.add('hidden');
+                chatIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+                chatbotToggle.classList.add('animate-pulse');
+            } else {
+                chatbotWindow.classList.remove('hidden');
+                chatIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                chatbotToggle.classList.remove('animate-pulse');
+                chatInput.focus();
+            }
+        });
+
+        async function sendChatMessage() {
+            const message = chatInput.value.trim();
+            
+            if (!message || isWaitingResponse) return;
+            
+            chatInput.value = '';
+            
+            if (quickActions && conversationHistory.length === 0) {
+                quickActions.style.display = 'none';
+            }
+            
+            addChatMessage(message, 'user');
+            
+            const typingId = addTypingIndicator();
+            
+            isWaitingResponse = true;
+            sendButton.disabled = true;
+            chatInput.disabled = true;
+            
+            try {
+                const response = await fetch(CHATBOT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        history: conversationHistory
+                    })
+                });
+                
+                const data = await response.json();
+                
+                removeTypingIndicator(typingId);
+                
+                if (data.success) {
+                    addChatMessage(data.response, 'bot', data.type);
+                    
+                    conversationHistory.push(
+                        { role: 'user', parts: [{ text: message }] },
+                        { role: 'model', parts: [{ text: data.response }] }
+                    );
+                } else {
+                    addChatMessage('Desculpe, ocorreu um erro. Tente novamente! 😅', 'bot');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao enviar mensagem:', error);
+                removeTypingIndicator(typingId);
+                addChatMessage('Não consegui conectar com o servidor. Verifique se o chatbot está rodando! 🔌', 'bot');
+            } finally {
+                isWaitingResponse = false;
+                sendButton.disabled = false;
+                chatInput.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        function sendQuickMessage(message) {
+            chatInput.value = message;
+            sendChatMessage();
+        }
+
+        function addChatMessage(text, sender, type = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex gap-3 animate-fadeInUp ${sender === 'user' ? 'justify-end' : ''}`;
+            
+            const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            if (sender === 'bot') {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full gradient-purple flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm max-w-[80%]">
+                        <p class="text-gray-800 text-sm whitespace-pre-line">${text}</p>
+                        <span class="text-xs text-gray-400 mt-1 block">${time} ${type === 'ai' ? '✨' : ''}</span>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="gradient-purple rounded-2xl rounded-tr-none p-3 shadow-sm max-w-[80%]">
+                        <p class="text-white text-sm whitespace-pre-line">${text}</p>
+                        <span class="text-xs text-white text-opacity-70 mt-1 block">${time}</span>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            const id = 'typing-' + Date.now();
+            typingDiv.id = id;
+            typingDiv.className = 'flex gap-3 animate-fadeInUp';
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full gradient-purple flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                </div>
+                <div class="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return id;
+        }
+
+        function removeTypingIndicator(id) {
+            const typingDiv = document.getElementById(id);
+            if (typingDiv) {
+                typingDiv.remove();
+            }
+        }
+
+        console.log('✅ Dashboard e Chatbot carregados com sucesso!');
+    </script>
+</body>
+</html>
